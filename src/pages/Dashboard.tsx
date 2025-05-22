@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SendTokenForm from '../components/SendTokenForm';
+import TokenList from '../components/TokenList';
 import TransactionList from '../components/TransactionList';
 import { useWallet } from '../hooks/useWallet';
 
@@ -30,6 +31,11 @@ const Dashboard = () => {
             <h2 className="text-2xl font-semibold mb-4">USDC Balance</h2>
             <p className="text-3xl">{Number(tokenBalance).toFixed(2)} USDC</p>
           </div>
+        </div>
+
+        {/* Token List */}
+        <div className="bg-gray-800 p-6 rounded-lg">
+          <TokenList />
         </div>
 
         {/* Send Token Form */}

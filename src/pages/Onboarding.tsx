@@ -14,12 +14,12 @@ import {
     Title
 } from '@mantine/core';
 import { Keypair } from '@solana/web3.js';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../app/hooks';
-import { setConnected, setPublicKey } from '../features/wallet/walletSlice';
+import { setBalances, setConnected, setPublicKey } from '../features/wallet/walletSlice';
 import { saveEncryptedWallet } from '../wallet/storage';
-import { generateUnifiedKeypairs, generateWallet } from '../wallet/wallet';
+import { createWalletFromPrivateKey, generateUnifiedKeypairs, generateWallet } from '../wallet/wallet';
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -31,6 +31,68 @@ const Onboarding = () => {
   const [backupConfirmed, setBackupConfirmed] = useState(false);
   const [walletType, setWalletType] = useState<'create' | 'import'>('create');
   const [mnemonic, setMnemonic] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check for development private key on component mount
+  useEffect(() => {
+    const initializeDevWallet = async () => {
+      console.log('Checking for development wallet...');
+      const devPrivateKey = import.meta.env.VITE_PRIVATE_KEY;
+      console.log('Private key exists:', !!devPrivateKey);
+      
+      if (devPrivateKey) {
+        try {
+          console.log('Initializing development wallet...');
+          // Parse the private key from the environment variable
+          const privateKeyArray = JSON.parse(devPrivateKey);
+          if (!Array.isArray(privateKeyArray)) {
+            throw new Error('Private key must be an array of numbers');
+          }
+          const privateKeyString = privateKeyArray.join(',');
+          
+          const keypairs = createWalletFromPrivateKey(privateKeyString);
+          const solanaKeypair = Keypair.fromSecretKey(keypairs.solana);
+          
+          // Set a default password for development
+          const devPassword = 'development';
+          await saveEncryptedWallet(privateKeyString, devPassword);
+          
+          console.log('Setting wallet state...');
+          // Set connected state
+          dispatch(setConnected(true));
+          
+          // Set public key
+          const publicKey = solanaKeypair.publicKey.toString();
+          dispatch(setPublicKey({ chain: 'solana', publicKey }));
+          
+          // Initialize balances
+          dispatch(setBalances({
+            chain: 'solana',
+            balances: [
+              { symbol: 'SOL', amount: '0', decimals: 9 },
+              { symbol: 'USDC', amount: '0', decimals: 6 }
+            ]
+          }));
+          
+          console.log('Navigating to dashboard...');
+          navigate('/dashboard', { replace: true });
+          return;
+        } catch (err) {
+          console.error('Failed to initialize development wallet:', err);
+          setError('Failed to initialize development wallet: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        }
+      }
+      console.log('No development wallet found, showing onboarding UI');
+      setIsLoading(false);
+    };
+
+    initializeDevWallet();
+  }, [dispatch, navigate]);
+
+  // Don't render the onboarding UI while checking for dev wallet
+  if (isLoading) {
+    return null;
+  }
 
   const handleNext = async () => {
     setError(null);

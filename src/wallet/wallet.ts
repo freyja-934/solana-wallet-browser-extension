@@ -23,6 +23,28 @@ export const generateUnifiedKeypairs = (mnemonic: string): UnifiedKeypairs => {
   return { solana, ethereum };
 };
 
+export const createWalletFromPrivateKey = (privateKey: string): UnifiedKeypairs => {
+  try {
+    const cleanKey = privateKey.replace(/\s/g, '');
+    const keyArray = cleanKey.split(',').map(num => parseInt(num, 10));
+    
+    if (!Array.isArray(keyArray) || keyArray.length !== 64) {
+      throw new Error('Invalid private key format. Expected 64 numbers.');
+    }
+    
+    const privateKeyBytes = new Uint8Array(keyArray);
+    const solanaKeypair = Keypair.fromSecretKey(privateKeyBytes);
+    
+    return {
+      solana: privateKeyBytes,
+      ethereum: new Uint8Array(0)
+    };
+  } catch (error) {
+    console.error('Error creating wallet from private key:', error);
+    throw new Error('Failed to create wallet from private key');
+  }
+};
+
 export interface EncryptedWallet {
   solana: EncryptedData;
   ethereum: EncryptedData;

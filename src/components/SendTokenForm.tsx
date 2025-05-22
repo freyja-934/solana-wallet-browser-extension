@@ -1,4 +1,4 @@
-import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { Connection, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { useState } from 'react';
 import { useWallet } from '../hooks/useWallet';
 
@@ -17,6 +17,10 @@ const SendTokenForm = () => {
     setError(null);
 
     try {
+      if (!window.solana) {
+        throw new Error('Solana wallet not found');
+      }
+
       const recipientPubkey = new PublicKey(recipient);
       const amountInLamports = parseFloat(amount) * LAMPORTS_PER_SOL;
 
@@ -24,33 +28,40 @@ const SendTokenForm = () => {
         throw new Error('Amount must be greater than 0');
       }
 
-      if (solBalance && amountInLamports > solBalance * LAMPORTS_PER_SOL) {
+      if (solBalance && amountInLamports > Number(solBalance) * LAMPORTS_PER_SOL) {
         throw new Error('Insufficient balance');
       }
 
       const transaction = new Transaction().add(
         SystemProgram.transfer({
-          fromPubkey: publicKey,
+          fromPubkey: new PublicKey(publicKey),
           toPubkey: recipientPubkey,
           lamports: amountInLamports,
         })
       );
 
-      // const signature = await window.solana.signAndSendTransaction(transaction);
+      // Get the latest blockhash
+      const connection = new Connection('https://api.mainnet-beta.solana.com');
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = new PublicKey(publicKey);
+
+      // Sign and send the transaction
+      const signature = await window.solana.signAndSendTransaction(transaction);
 
       // Add transaction to recent transactions
-      // addTransaction({
-      //   id: signature.signature,
-      //   type: 'send',
-      //   amount: parseFloat(amount),
-      //   token: 'SOL',
-      //   timestamp: Date.now(),
-      //   status: 'pending',
-      //   from: publicKey.toString(),
-      //   to: recipient,
-      //   signature: signature.signature,
-      //   chain: 'solana',
-      // });
+      addTransaction({
+        id: signature.signature,
+        type: 'send',
+        amount: parseFloat(amount),
+        token: 'SOL',
+        timestamp: Date.now(),
+        status: 'pending',
+        from: publicKey.toString(),
+        to: recipient,
+        signature: signature.signature,
+        chain: 'solana',
+      });
 
       // Clear form
       setRecipient('');
