@@ -23,12 +23,12 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-gray-800 p-6 rounded-lg">
             <h2 className="text-2xl font-semibold mb-4">SOL Balance</h2>
-            <p className="text-3xl">{solBalance?.toFixed(4) || '0.0000'} SOL</p>
+            <p className="text-3xl">{Number(solBalance).toFixed(4)} SOL</p>
           </div>
           
           <div className="bg-gray-800 p-6 rounded-lg">
             <h2 className="text-2xl font-semibold mb-4">USDC Balance</h2>
-            <p className="text-3xl">{tokenBalance?.toFixed(2) || '0.00'} USDC</p>
+            <p className="text-3xl">{Number(tokenBalance).toFixed(2)} USDC</p>
           </div>
         </div>
 

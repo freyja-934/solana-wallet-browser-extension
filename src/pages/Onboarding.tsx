@@ -1,17 +1,17 @@
 import {
-  Alert,
-  Button,
-  Container,
-  Group,
-  Image,
-  Paper,
-  PasswordInput,
-  SimpleGrid,
-  Stack,
-  Stepper,
-  Text,
-  TextInput,
-  Title
+    Alert,
+    Button,
+    Container,
+    Group,
+    Image,
+    Paper,
+    PasswordInput,
+    SimpleGrid,
+    Stack,
+    Stepper,
+    Text,
+    TextInput,
+    Title
 } from '@mantine/core';
 import { Keypair } from '@solana/web3.js';
 import { useState } from 'react';
@@ -81,7 +81,7 @@ const Onboarding = () => {
         const solanaKeypair = Keypair.fromSecretKey(keypairs.solana);
         dispatch(setConnected(true));
         dispatch(setPublicKey({ chain: 'solana', publicKey: solanaKeypair.publicKey.toString() }));
-        navigate('/home');
+        navigate('/dashboard');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to create wallet');
       }

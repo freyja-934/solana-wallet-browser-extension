@@ -1,7 +1,7 @@
 import { createTheme, MantineColorsTuple, MantineProvider } from '@mantine/core';
 import { Provider } from 'react-redux';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
 import Onboarding from './pages/Onboarding';
 import Unlock from './pages/Unlock';
 import { store } from './store/store';
@@ -40,7 +40,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Onboarding />} />
-            <Route path="/home" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/unlock" element={<Unlock />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
